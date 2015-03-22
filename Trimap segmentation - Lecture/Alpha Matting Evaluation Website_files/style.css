@@ -1,0 +1,49 @@
+﻿table.gr {
+margin-left:auto;
+margin-right:auto;
+text-align:center;
+font-size: 75%;
+border-collapse: collapse;
+border: 2px solid gray;
+/*padding: 2px;*/
+background-color: white;
+}
+
+table.gr tbody td { border-bottom: 1px solid gray; }
+table.gr td  { padding: 3px 2px 3px 2px; } /* top right bottom left */
+colgroup { border: 2px solid gray; }
+thead    { border: 2px solid gray; }
+thead td { padding: 5px 3px 0px 3px; }
+td.bt { border-top: 1px solid gray; }
+.hidden { display: none }
+.smfont { font-size:90%; }
+.rank { 
+font-size: 75%;
+color: blue;
+}
+
+tr.white{background-color: white;}
+tr.blue{background-color: #c8e8ff;}
+td.green{background-color: #CCFFCC;}
+td.lgreen{background-color: #7CCD7C;}
+td.yellow{background-color: #FFFF99;}
+
+table.ref {
+font-size: 75%;
+margin-left:auto;
+margin-right:auto;
+border-collapse: collapse;
+border: 2px solid gray;
+xbackground-color: white;
+}
+table.ref td { border-bottom: 1px solid gray; }
+table.ref thead td { padding: 2px 3px 2px 3px; } /* top right bottom left */
+
+a:link{color: black;}
+a:visited{color: #23238E;}
+a:active{color: #23238E;}          
+a:hover {  
+color: #CCCCCC;
+background-color: #333333;
+text-decoration: none;
+}
