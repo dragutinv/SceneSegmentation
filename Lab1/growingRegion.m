@@ -28,7 +28,7 @@ for row = 1:dim(1)
             
             while (isempty(queue) == 0)
                     %GROW REGION        
-                    neighbours = findNeighbourneighbourss([queue(1) queue(2)], connectivity,dim);
+                    neighbours = findNeighbourneighbours([queue(1) queue(2)], connectivity,dim);
                     queue = queue(3:end);%remove seed, add neighbours to queue
                     
                     %ADD ALL NEIBOURHOOD PIXELS THAT BELONG TO THE SAME REGION
