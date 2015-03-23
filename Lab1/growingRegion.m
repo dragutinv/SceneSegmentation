@@ -32,7 +32,7 @@ for row = 1:dim(1)
                     queue = queue(3:end);%remove seed, add neighbours to queue
                     
                     %ADD ALL NEIBOURHOOD PIXELS THAT BELONG TO THE SAME REGION
-                    for i = 1:2:length()
+                    for i = 1:2:length(neighbours)
                         
                         %ADD PIXEL TO REGION IF ITS NOT VISITED AND IF
                         %SATISFIES BELONGING CRITERIUM

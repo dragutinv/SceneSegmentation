@@ -22,7 +22,7 @@ function varargout = interface(varargin)
 
 % Edit the above text to modify the response to help interface
 
-% Last Modified by GUIDE v2.5 23-Mar-2015 17:27:33
+% Last Modified by GUIDE v2.5 23-Mar-2015 16:54:03
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -81,6 +81,7 @@ function getImage_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [handles.ImgFileName, handles.ImgPathName] = uigetfile('*.png;*.jpg;*.jpeg;*.tif;*.gif', 'Image Files (*.jpg, *.png, *.tif, *.gif)');
+handles.ImgFileName
 
 if (length(handles.ImgFileName) > 3)
     tic; %start measuring execution time
@@ -97,13 +98,22 @@ if (length(handles.ImgFileName) > 3)
     imagesc()
     imshow([]);
     
-    guidata(interface, handles);
+    guidata(gui, handles);
     T = toc; %measure elapsed time    
 end
  
 
 
 
+
+
+function txtWindowSize_Callback(hObject, eventdata, handles)
+% hObject    handle to txtWindowSize (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtWindowSize as text
+%        str2double(get(hObject,'String')) returns contents of txtWindowSize as a double
 
 
 % --- Executes during object creation, after setting all properties.
@@ -142,19 +152,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in lstProps.
-function lstProps_Callback(hObject, eventdata, handles)
-% hObject    handle to lstProps (see GCBO)
+% --- Executes on selection change in edit3.
+function edit3_Callback(hObject, eventdata, handles)
+% hObject    handle to edit3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns lstProps contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from lstProps
+% Hints: contents = cellstr(get(hObject,'String')) returns edit3 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from edit3
 
 
 % --- Executes during object creation, after setting all properties.
-function lstProps_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to lstProps (see GCBO)
+function edit3_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit3 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -170,25 +180,8 @@ function btnPerformSegmentation_Callback(hObject, eventdata, handles)
 % hObject    handle to btnPerformSegmentation (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-
-list = get(handles.lstProps, 'String');
-props = list{get(handles.lstProps, 'value')};
-
-[outputImageContrast, outputImageEnergy, outputImageHomogeneity, outputImageEntropy] = textureSegmentation([handles.ImgPathName,handles.ImgFileName], props, str2num(get(handles.txtWndSize, 'String')));
+[features] = textureSegmentation([handles.ImgPathName,handles.ImgFileName], handles.txtWindowSize);
 axes(handles.imgPattern);
 imagesc();
-
-set(hObject,'outputImageContrast',outputImageContrast);
-set(hObject,'outputImageEnergy',outputImageEnergy);
-set(hObject,'outputImageHomogeneity',outputImageHomogeneity);
-set(hObject,'outputImageEntropy',outputImageEntropy);
-
-if strcmp(props, 'Contrast') == 1
-    imshow(uint8(outputImageContrast*255));
-elseif strcmp(props, 'Energy') == 1
-    imshow(uint8(outputImageEnergy*255));
-elseif strcmp(props, 'Homogeneity') == 1
-    imshow(uint8(outputImageHomogeneity*255));    
-elseif strcmp(props, 'Entropy') == 1
-    imshow(uint8(outputImageEntropy*255));    
-end
+imshow(label2rgb(uint8(features*255)));
+%imshow(uint8(imResult*255));
