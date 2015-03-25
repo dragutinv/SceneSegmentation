@@ -22,7 +22,7 @@ function varargout = interface(varargin)
 
 % Edit the above text to modify the response to help interface
 
-% Last Modified by GUIDE v2.5 23-Mar-2015 16:54:03
+% Last Modified by GUIDE v2.5 25-Mar-2015 16:57:18
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -81,7 +81,6 @@ function getImage_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 [handles.ImgFileName, handles.ImgPathName] = uigetfile('*.png;*.jpg;*.jpeg;*.tif;*.gif', 'Image Files (*.jpg, *.png, *.tif, *.gif)');
-handles.ImgFileName
 
 if (length(handles.ImgFileName) > 3)
     tic; %start measuring execution time
@@ -98,23 +97,9 @@ if (length(handles.ImgFileName) > 3)
     imagesc()
     imshow([]);
     
-    guidata(gui, handles);
+    guidata(interface, handles);
     T = toc; %measure elapsed time    
 end
- 
-
-
-
-
-
-function txtWindowSize_Callback(hObject, eventdata, handles)
-% hObject    handle to txtWindowSize (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-% Hints: get(hObject,'String') returns contents of txtWindowSize as text
-%        str2double(get(hObject,'String')) returns contents of txtWindowSize as a double
-
 
 % --- Executes during object creation, after setting all properties.
 function txtWindowSize_CreateFcn(hObject, eventdata, handles)
@@ -137,7 +122,15 @@ function txtWndSize_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of txtWndSize as text
 %        str2double(get(hObject,'String')) returns contents of txtWndSize as a double
+global outputImageContrast;
+global outputImageEnergy;
+global outputImageHomogeneity;
+global outputImageEntropy;
 
+outputImageContrast = [];
+outputImageEnergy = [];
+outputImageHomogeneity = [];
+outputImageEntropy = [];
 
 % --- Executes during object creation, after setting all properties.
 function txtWndSize_CreateFcn(hObject, eventdata, handles)
@@ -152,19 +145,19 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
-% --- Executes on selection change in edit3.
-function edit3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+% --- Executes on selection change in lstProps.
+function lstProps_Callback(hObject, eventdata, handles)
+% hObject    handle to lstProps (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: contents = cellstr(get(hObject,'String')) returns edit3 contents as cell array
-%        contents{get(hObject,'Value')} returns selected item from edit3
+% Hints: contents = cellstr(get(hObject,'String')) returns lstProps contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from lstProps
 
 
 % --- Executes during object creation, after setting all properties.
-function edit3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function lstProps_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to lstProps (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -180,8 +173,175 @@ function btnPerformSegmentation_Callback(hObject, eventdata, handles)
 % hObject    handle to btnPerformSegmentation (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-[features] = textureSegmentation([handles.ImgPathName,handles.ImgFileName], handles.txtWindowSize);
+global outputImageContrast;
+global outputImageEnergy;
+global outputImageHomogeneity;
+global outputImageEntropy;
+
+list = get(handles.lstProps, 'String');
+props = list{get(handles.lstProps, 'value')};
+
+if size(outputImageContrast) < 10
+    [outputImageContrast, outputImageEnergy, outputImageHomogeneity, outputImageEntropy] = textureSegmentation([handles.ImgPathName,handles.ImgFileName], props, str2num(get(handles.txtWndSize, 'String')));
+end
 axes(handles.imgPattern);
+
+if strcmp(props, 'Contrast') == 1
+    im = uint8(outputImageContrast*255);
+elseif strcmp(props, 'Energy') == 1
+    im = uint8(outputImageEnergy*255);
+elseif strcmp(props, 'Homogeneity') == 1
+    im = uint8(outputImageHomogeneity*255);    
+elseif strcmp(props, 'Entropy') == 1
+    im = uint8(outputImageEntropy*255);    
+end
+
 imagesc();
-imshow(label2rgb(uint8(features*255)));
-%imshow(uint8(imResult*255));
+imshow(im);
+
+%perform region growing segmentation
+connectivity = 4;
+connectivityFour = get(handles.rbFourNeigbours,'Value');
+if (connectivityFour == 0)
+    connectivity = 8;
+end
+
+threshold = str2double(get(handles.txtThreshold,'String'));
+
+[regions] = growingRegion(im, connectivity, threshold);
+axes(handles.imgGrowingRegion);
+imagesc();
+imshow(regions);
+
+
+% --- Executes on button press in rbFourNeigbours.
+function rbFourNeigbours_Callback(hObject, eventdata, handles)
+% hObject    handle to rbFourNeigbours (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of rbFourNeigbours
+
+
+% --- Executes on button press in radiobutton2.
+function radiobutton2_Callback(hObject, eventdata, handles)
+% hObject    handle to radiobutton2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of radiobutton2
+
+
+
+function txtThreshold_Callback(hObject, eventdata, handles)
+% hObject    handle to txtThreshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of txtThreshold as text
+%        str2double(get(hObject,'String')) returns contents of txtThreshold as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function txtThreshold_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to txtThreshold (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+
+function edit4_Callback(hObject, eventdata, handles)
+% hObject    handle to edit4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit4 as text
+%        str2double(get(hObject,'String')) returns contents of edit4 as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit4_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit4 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on selection change in listbox1.
+function listbox1_Callback(hObject, eventdata, handles)
+% hObject    handle to listbox1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listbox1 contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listbox1
+
+
+% --- Executes during object creation, after setting all properties.
+function listbox1_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listbox1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in chbContrast.
+function chbContrast_Callback(hObject, eventdata, handles)
+% hObject    handle to chbContrast (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chbContrast
+
+
+% --- Executes on button press in chbEnergy.
+function chbEnergy_Callback(hObject, eventdata, handles)
+% hObject    handle to chbEnergy (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chbEnergy
+
+
+% --- Executes on button press in chbHomogeneity.
+function chbHomogeneity_Callback(hObject, eventdata, handles)
+% hObject    handle to chbHomogeneity (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chbHomogeneity
+
+
+% --- Executes on button press in chbEntropy.
+function chbEntropy_Callback(hObject, eventdata, handles)
+% hObject    handle to chbEntropy (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of chbEntropy
+
+
+% --- Executes on button press in btnClassification.
+function btnClassification_Callback(hObject, eventdata, handles)
+% hObject    handle to btnClassification (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+score = scr_classifyFunc([]);
+set(handles.txtScor, )

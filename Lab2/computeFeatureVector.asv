@@ -16,23 +16,9 @@ h = graycoprops(graycomatrix(A, 'offset', [0 1; -1 1; -1 0; -1 -1], 'Symmetric',
 cc = graycoprops(graycomatrix(A, 'offset', [0 1; -1 1; -1 0; -1 -1], 'Symmetric', true),'Correlation');
 
 v = [];
-
-%contrast
 if (props(1) == 1)
-    v = [v c.Contrast];
+    v = [v ]
 end
 
-%energy
-if (props(2) == 1)
-    v = [v e.Energy];
-end
-
-%homogeneity
-if (props(3) == 1)
-    v = [v h.Homogeneity];
-end
-
-%entropy
-if (props(4) == 1)
-    v = [v cc.Correlation];
-end
+v = [e.Energy c.Contrast h.Homogeneity cc.Correlation];
+%v = mean(A);
