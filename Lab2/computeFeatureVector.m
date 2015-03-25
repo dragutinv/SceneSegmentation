@@ -1,4 +1,4 @@
-function v = computeFeatureVector(A, props)
+function v = computeFeatureVector(im, props)
 %
 % Describe an image A using texture features.
 %   A is the image
@@ -6,8 +6,8 @@ function v = computeFeatureVector(A, props)
 % image
 %
 
-if size(A,3) > 1,
-	A = rgb2gray(A);
+if size(im,3) > 1,
+	A = rgb2gray(im);
 end
 
 e = graycoprops(graycomatrix(A, 'offset', [0 1; -1 1; -1 0; -1 -1], 'Symmetric', true),'Energy');
@@ -36,3 +36,6 @@ end
 if (props(4) == 1)
     v = [v cc.Correlation];
 end
+
+%use color
+v = [v im(:,:, 1) im(:,:, 2) im(:,:, 3)];

@@ -22,7 +22,7 @@ function varargout = interface(varargin)
 
 % Edit the above text to modify the response to help interface
 
-% Last Modified by GUIDE v2.5 25-Mar-2015 16:57:18
+% Last Modified by GUIDE v2.5 25-Mar-2015 17:22:43
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -82,8 +82,17 @@ function getImage_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 [handles.ImgFileName, handles.ImgPathName] = uigetfile('*.png;*.jpg;*.jpeg;*.tif;*.gif', 'Image Files (*.jpg, *.png, *.tif, *.gif)');
 
+global outputImageContrast;
+global outputImageEnergy;
+global outputImageHomogeneity;
+global outputImageEntropy;
+
+outputImageContrast = [];
+outputImageEnergy = [];
+outputImageHomogeneity = [];
+outputImageEntropy = [];
+
 if (length(handles.ImgFileName) > 3)
-    tic; %start measuring execution time
     
     axes(handles.imgOriginal);
     imagesc()
@@ -98,7 +107,6 @@ if (length(handles.ImgFileName) > 3)
     imshow([]);
     
     guidata(interface, handles);
-    T = toc; %measure elapsed time    
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -182,18 +190,18 @@ list = get(handles.lstProps, 'String');
 props = list{get(handles.lstProps, 'value')};
 
 if size(outputImageContrast) < 10
-    [outputImageContrast, outputImageEnergy, outputImageHomogeneity, outputImageEntropy] = textureSegmentation([handles.ImgPathName,handles.ImgFileName], props, str2num(get(handles.txtWndSize, 'String')));
+    [outputImageContrast, outputImageEnergy, outputImageHomogeneity, outputImageEntropy] = textureSegmentation([handles.ImgPathName,handles.ImgFileName], str2num(get(handles.txtWndSize, 'String')));
 end
 axes(handles.imgPattern);
 
 if strcmp(props, 'Contrast') == 1
-    im = uint8(outputImageContrast*255);
+    im = outputImageContrast;
 elseif strcmp(props, 'Energy') == 1
-    im = uint8(outputImageEnergy*255);
+    im = outputImageEnergy;
 elseif strcmp(props, 'Homogeneity') == 1
-    im = uint8(outputImageHomogeneity*255);    
+    im = outputImageHomogeneity;    
 elseif strcmp(props, 'Entropy') == 1
-    im = uint8(outputImageEntropy*255);    
+    im = outputImageEntropy;    
 end
 
 imagesc();
@@ -201,35 +209,37 @@ imshow(im);
 
 %perform region growing segmentation
 connectivity = 4;
-connectivityFour = get(handles.rbFourNeigbours,'Value');
+connectivityFour = get(handles.rb4Neigbours,'Value');
 if (connectivityFour == 0)
     connectivity = 8;
 end
 
 threshold = str2double(get(handles.txtThreshold,'String'));
 
-[regions] = growingRegion(im, connectivity, threshold);
+[regions] = growingRegion(cat(3, ), connectivity, threshold);
 axes(handles.imgGrowingRegion);
 imagesc();
 imshow(regions);
 
 
-% --- Executes on button press in rbFourNeigbours.
-function rbFourNeigbours_Callback(hObject, eventdata, handles)
-% hObject    handle to rbFourNeigbours (see GCBO)
+% --- Executes on button press in rb4Neigbours.
+function rb4Neigbours_Callback(hObject, eventdata, handles)
+% hObject    handle to rb4Neigbours (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of rbFourNeigbours
+% Hint: get(hObject,'Value') returns toggle state of rb4Neigbours
+set(handles.rb8Neigbours, 'Value', 0);
 
 
-% --- Executes on button press in radiobutton2.
-function radiobutton2_Callback(hObject, eventdata, handles)
-% hObject    handle to radiobutton2 (see GCBO)
+% --- Executes on button press in rb8Neigbours.
+function rb8Neigbours_Callback(hObject, eventdata, handles)
+% hObject    handle to rb8Neigbours (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hint: get(hObject,'Value') returns toggle state of radiobutton2
+% Hint: get(hObject,'Value') returns toggle state of rb8Neigbours
+set(handles.rb4Neigbours, 'Value', 0);
 
 
 
@@ -343,5 +353,29 @@ function btnClassification_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-score = scr_classifyFunc([]);
-set(handles.txtScor, )
+chbContrast = get(handles.chbContrast, 'Value');
+chbEnergy = get(handles.chbEnergy, 'Value');
+chbHomogeneity = get(handles.chbHomogeneity, 'Value');
+chbEntropy = get(handles.chbEntropy, 'Value');
+
+score = scr_classifyFunc([chbContrast chbEnergy chbHomogeneity chbEntropy]);
+set(handles.txtScore, 'String', num2str(score));
+
+
+% --- Executes on button press in btnAllFeatures.
+function btnAllFeatures_Callback(hObject, eventdata, handles)
+% hObject    handle to btnAllFeatures (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+global outputImageContrast;
+global outputImageEnergy;
+global outputImageHomogeneity;
+global outputImageEntropy;
+
+if (size(outputImageContrast) > 10)
+    figure('units','normalized','outerposition',[0 0 1 1]);
+    subplot(1, 4, 1); imshow(outputImageContrast); title('Contrast');
+    subplot(1, 4, 2); imshow(outputImageEnergy); title('Energy');
+    subplot(1, 4, 3); imshow(outputImageHomogeneity); title('Homogeneity');
+    subplot(1, 4, 4); imshow(outputImageEntropy); title('Entropy');
+end

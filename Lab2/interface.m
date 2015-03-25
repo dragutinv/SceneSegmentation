@@ -82,8 +82,17 @@ function getImage_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 [handles.ImgFileName, handles.ImgPathName] = uigetfile('*.png;*.jpg;*.jpeg;*.tif;*.gif', 'Image Files (*.jpg, *.png, *.tif, *.gif)');
 
+global outputImageContrast;
+global outputImageEnergy;
+global outputImageHomogeneity;
+global outputImageEntropy;
+
+outputImageContrast = [];
+outputImageEnergy = [];
+outputImageHomogeneity = [];
+outputImageEntropy = [];
+
 if (length(handles.ImgFileName) > 3)
-    tic; %start measuring execution time
     
     axes(handles.imgOriginal);
     imagesc()
@@ -98,7 +107,6 @@ if (length(handles.ImgFileName) > 3)
     imshow([]);
     
     guidata(interface, handles);
-    T = toc; %measure elapsed time    
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -177,24 +185,19 @@ global outputImageContrast;
 global outputImageEnergy;
 global outputImageHomogeneity;
 global outputImageEntropy;
-
-list = get(handles.lstProps, 'String');
-props = list{get(handles.lstProps, 'value')};
+global rangeEntropy;
+global rangeContrast;
+global rangeEnergy;
+global rangeHomogeneity;
 
 if size(outputImageContrast) < 10
-    [outputImageContrast, outputImageEnergy, outputImageHomogeneity, outputImageEntropy] = textureSegmentation([handles.ImgPathName,handles.ImgFileName], props, str2num(get(handles.txtWndSize, 'String')));
+    [outputImageContrast, outputImageEnergy, outputImageHomogeneity, outputImageEntropy, rangeContrast, rangeEnergy, rangeHomogeneity, rangeEntropy] = textureSegmentation([handles.ImgPathName,handles.ImgFileName], str2num(get(handles.txtWndSize, 'String')));
 end
 axes(handles.imgPattern);
 
-if strcmp(props, 'Contrast') == 1
-    im = uint8(outputImageContrast*255);
-elseif strcmp(props, 'Energy') == 1
-    im = uint8(outputImageEnergy*255);
-elseif strcmp(props, 'Homogeneity') == 1
-    im = uint8(outputImageHomogeneity*255);    
-elseif strcmp(props, 'Entropy') == 1
-    im = uint8(outputImageEntropy*255);    
-end
+im = outputImageContrast;
+
+imOriginal = imread([handles.ImgPathName,handles.ImgFileName]);
 
 imagesc();
 imshow(im);
@@ -208,7 +211,7 @@ end
 
 threshold = str2double(get(handles.txtThreshold,'String'));
 
-[regions] = growingRegion(im, connectivity, threshold);
+[regions] = growingRegion(cat(8,outputImageContrast, outputImageEnergy, outputImageHomogeneity, outputImageEntropy, rangeContrast, rangeEnergy, rangeHomogeneity, rangeEntropy), connectivity, threshold);
 axes(handles.imgGrowingRegion);
 imagesc();
 imshow(regions);

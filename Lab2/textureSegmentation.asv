@@ -1,4 +1,4 @@
-function [outputImageContrast, outputImageEnergy, outputImageHomogeneity, outputImageEntropy, rangeContrast, rangeEnergy, rangeHomogeneity, rangeEntropy] = textureSegmentation(imageFile, windowSize)
+function [outputImageContrast, outputImageEnergy, outputImageHomogeneity, outputImageEntropy, rangeContrast, rangeEnergy, rangeHomogeneity] = textureSegmentation(imageFile, windowSize)
 
 im = imread(imageFile);
 
@@ -78,27 +78,3 @@ mmin = min(outputImageEnergy(:));
 mmax = max(outputImageEnergy(:));
 outputImageEnergy = (outputImageEnergy-mmin) ./ (mmax-mmin);
 outputImageEnergy = uint8(outputImageEnergy  * 255);
-
-%normalization of energy range
-mmin = min(rangeEnergy(:));
-mmax = max(rangeEnergy(:));
-rangeEnergy = (rangeEnergy-mmin) ./ (mmax-mmin);
-rangeEnergy = uint8(rangeEnergy  * 255);
-
-%normalization of homogeneity range
-mmin = min(rangeHomogeneity(:));
-mmax = max(rangeHomogeneity(:));
-rangeHomogeneity = (rangeHomogeneity-mmin) ./ (mmax-mmin);
-rangeHomogeneity = uint8(outputImageHomogeneity  * 255);
-
-%normalization of entropy range
-mmin = min(rangeEntropy(:));
-mmax = max(rangeEntropy(:));
-rangeEntropy = (rangeEntropy-mmin) ./ (mmax-mmin);
-rangeEntropy = uint8(rangeEntropy  * 255);
-
-%normalization of contrast
-mmin = min(rangeContrast(:));
-mmax = max(rangeContrast(:));
-rangeContrast = (rangeContrast-mmin) ./ (mmax-mmin);
-rangeContrast = uint8(rangeContrast  * 255);
