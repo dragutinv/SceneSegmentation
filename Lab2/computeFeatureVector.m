@@ -10,32 +10,30 @@ if size(im,3) > 1,
 	A = rgb2gray(im);
 end
 
-e = graycoprops(graycomatrix(A, 'offset', [0 1; -1 1; -1 0; -1 -1], 'Symmetric', true),'Energy');
-c = graycoprops(graycomatrix(A, 'offset', [0 1; -1 1; -1 0; -1 -1], 'Symmetric', true),'Contrast');
-h = graycoprops(graycomatrix(A, 'offset', [0 1; -1 1; -1 0; -1 -1], 'Symmetric', true),'Homogeneity');
-cc = graycoprops(graycomatrix(A, 'offset', [0 1; -1 1; -1 0; -1 -1], 'Symmetric', true),'Correlation');
+e = graycoprops(graycomatrix(A, 'offset', [0 1; -1 0; -1 1; -1 -1], 'Symmetric', true),'Energy');
+c = graycoprops(graycomatrix(A, 'offset', [0 1; -1 0; -1 1; -1 -1], 'Symmetric', true),'Contrast');
+h = graycoprops(graycomatrix(A, 'offset', [0 1; -1 0; -1 1; -1 -1], 'Symmetric', true),'Homogeneity');
+cc = graycoprops(graycomatrix(A, 'offset', [0 1; -1 0; -1 1; -1 -1], 'Symmetric', true),'Correlation');
 
 v = [];
 
 %contrast
 if (props(1) == 1)
-    v = [v c.Contrast];
+    v = [v mean(c.Contrast) range(c.Contrast)];
 end
 
 %energy
 if (props(2) == 1)
-    v = [v e.Energy];
+    v = [v mean(e.Energy) range(e.Energy)];
 end
 
 %homogeneity
 if (props(3) == 1)
-    v = [v h.Homogeneity];
+    v = [v mean(h.Homogeneity) range(h.Homogeneity)];
 end
 
 %entropy
 if (props(4) == 1)
-    v = [v cc.Correlation];
+    v = [v mean(cc.Correlation) range(cc.Correlation)];
 end
 
-%use color
-v = [v im(:,:, 1) im(:,:, 2) im(:,:, 3)];
